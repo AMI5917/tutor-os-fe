@@ -14,6 +14,8 @@ import {
   Building2,
   Check,
   Menu,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,9 +32,11 @@ import { toast } from "sonner";
 
 interface DashboardHeaderProps {
   onMenuClick: () => void;
+  collapsed: boolean;
+  onCollapseToggle: () => void;
 }
 
-export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+export function DashboardHeader({ onMenuClick, collapsed, onCollapseToggle }: DashboardHeaderProps) {
   const { user, loginAsDemo, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(3);
 
@@ -43,15 +47,28 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b bg-background/95 px-4 sm:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Left: Mobile Menu Button + Global Search */}
+      {/* Left: Mobile Menu Button + Collapse Toggle + Global Search */}
       <div className="flex items-center gap-4 w-full max-w-md">
-        {/* Mobile menu button */}
+        {/* Mobile menu button (hamburger) */}
         <button
           onClick={onMenuClick}
           className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
+        </button>
+
+        {/* Collapse/Expand sidebar button (visible on mobile when sidebar is open, and on desktop) */}
+        <button
+          onClick={onCollapseToggle}
+          className="lg:flex hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <ChevronRight className="h-5 w-5" />
+          ) : (
+            <ChevronLeft className="h-5 w-5" />
+          )}
         </button>
 
         {/* Search */}

@@ -94,12 +94,12 @@ const NAV_ITEMS: NavItem[] = [
 interface AppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  collapsed: boolean;
 }
 
-export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
+export function AppSidebar({ isOpen, onClose, collapsed }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
 
   // Close sidebar on navigation on mobile
   useEffect(() => {
@@ -108,21 +108,11 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
     }
   }, [pathname, onClose]);
 
-  // Handle responsive collapsed state
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setCollapsed(false);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const sidebarClasses = cn(
-    "relative flex flex-col border-r bg-card text-card-foreground transition-all duration-300 z-30 shrink-0",
+    "flex flex-col border-r bg-card text-card-foreground transition-all duration-300 z-50 shrink-0",
     collapsed ? "w-20" : "w-64",
+    "lg:relative",
+    "fixed lg:static inset-y-0 left-0",
     isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
   );
 
@@ -150,17 +140,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           </div>
         )}
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="hidden lg:flex h-6 w-6 items-center justify-center rounded-full border bg-background text-muted-foreground hover:text-foreground hover:bg-accent shadow-sm"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronLeft className="h-3.5 w-3.5" />
-          )}
-        </button>
+        {/* Spacer for collapse button (now in header) */}
+        <div className="h-6 w-6" />
       </div>
 
       {/* Navigation Links */}
