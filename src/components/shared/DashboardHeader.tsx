@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Building2,
   Check,
+  Menu,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  onMenuClick: () => void;
+}
+
+export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const { user, loginAsDemo, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(3);
 
@@ -37,10 +42,20 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Left: Global Search & Quick Breadcrumb */}
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b bg-background/95 px-4 sm:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Left: Mobile Menu Button + Global Search */}
       <div className="flex items-center gap-4 w-full max-w-md">
-        <div className="relative w-full">
+        {/* Mobile menu button */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        {/* Search */}
+        <div className="relative w-full hidden sm:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search students, batches, teachers (⌘ + K)..."

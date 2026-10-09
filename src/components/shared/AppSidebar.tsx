@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -46,14 +46,14 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Class Batches",
-    href: "/dashboard/batches",
+    href: "/batches",
     icon: Layers,
     badge: "8 Active",
     badgeVariant: "info",
   },
   {
     label: "Students CRM",
-    href: "/dashboard/students",
+    href: "/students",
     icon: UserCheck,
   },
   {
@@ -77,7 +77,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Billing & Invoices",
-    href: "/dashboard/billing",
+    href: "/bills",
     icon: Receipt,
     badge: "6 Due",
     badgeVariant: "destructive",
@@ -91,18 +91,43 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
+  // Close sidebar on navigation on mobile
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
+  }, [pathname, onClose]);
+
+  // Handle responsive collapsed state
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setCollapsed(false);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const sidebarClasses = cn(
+    "relative flex flex-col border-r bg-card text-card-foreground transition-all duration-300 z-30 shrink-0",
+    collapsed ? "w-20" : "w-64",
+    isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+  );
+
   return (
-    <aside
-      className={cn(
-        "relative flex flex-col border-r bg-card text-card-foreground transition-all duration-300 z-30 shrink-0",
-        collapsed ? "w-20" : "w-64"
-      )}
-    >
+    <aside className={sidebarClasses}>
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between border-b px-4">
         {!collapsed ? (
@@ -155,6 +180,7 @@ export function AppSidebar() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
               title={collapsed ? item.label : undefined}
+              onClick={onClose}
             >
               <Icon
                 className={cn(
