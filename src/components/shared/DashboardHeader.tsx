@@ -58,10 +58,10 @@ export function DashboardHeader({ onMenuClick, collapsed, onCollapseToggle }: Da
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* Collapse/Expand sidebar button (visible on mobile when sidebar is open, and on desktop) */}
+        {/* Collapse/Expand sidebar button (visible on all screen sizes) */}
         <button
           onClick={onCollapseToggle}
-          className="lg:flex hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (

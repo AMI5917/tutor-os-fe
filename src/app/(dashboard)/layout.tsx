@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { AppSidebar } from "@/components/shared/AppSidebar";
@@ -16,6 +16,8 @@ export default function DashboardLayout({
   const { isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleSidebarClose = useCallback(() => setSidebarOpen(false), []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,13 +44,13 @@ export default function DashboardLayout({
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleSidebarClose}
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
-      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} collapsed={collapsed} />
+      <AppSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} collapsed={collapsed} />
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -56,7 +58,7 @@ export default function DashboardLayout({
           onMenuClick={() => setSidebarOpen(true)} 
           collapsed={collapsed}
           onCollapseToggle={() => {
-            setCollapsed(!collapsed);
+            setCollapsed((prev) => !prev);
             // On mobile, also open the sidebar when clicking collapse/expand
             if (typeof window !== 'undefined' && window.innerWidth < 1024) {
               setSidebarOpen(true);

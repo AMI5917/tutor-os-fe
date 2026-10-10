@@ -101,12 +101,12 @@ export function AppSidebar({ isOpen, onClose, collapsed }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  // Close sidebar on navigation on mobile
+  // Close sidebar on navigation on mobile (only on pathname change, not on every render)
   useEffect(() => {
     if (window.innerWidth < 1024) {
       onClose();
     }
-  }, [pathname, onClose]);
+  }, [pathname]); // Only depend on pathname, not onClose
 
   const sidebarClasses = cn(
     "flex flex-col border-r bg-card text-card-foreground transition-all duration-300 z-50 shrink-0",
