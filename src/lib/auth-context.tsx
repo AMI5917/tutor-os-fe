@@ -1,102 +1,169 @@
+// src/lib/auth-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { User, UserRole } from "@/types/roles";
+import React, { useState, useEffect, createContext, useContext } from "react";
+import { supabase } from "./supabase-client";
+import { Session } from "@supabase/supabase-js";
 
-export const DEMO_USERS: Record<UserRole, User> = {
-  ADMIN: {
-    id: "usr_admin_1",
-    name: "Prof. Amir",
-    email: "amir@apexacademy.edu",
-    role: "ADMIN",
-    academyName: "Apex Tutoring Academy",
-    title: "Academy Founder & Lead Director",
-    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
-  },
-  TEACHER: {
-    id: "usr_teach_1",
-    name: "Dr. Sarah Jenkins",
-    email: "sarah.jenkins@apexacademy.edu",
-    role: "TEACHER",
-    academyName: "Apex Tutoring Academy",
-    title: "Senior Mathematics & Physics Faculty",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  },
-  STUDENT: {
-    id: "usr_stud_1",
-    name: "Alex Rivera",
-    email: "alex.rivera@student.apex.edu",
-    role: "STUDENT",
-    academyName: "Apex Tutoring Academy",
-    title: "Grade 10 - Science Stream",
-    avatarUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-  },
-  PARENT: {
-    id: "usr_parent_1",
-    name: "David Rivera",
-    email: "david.rivera@guardian.com",
-    role: "PARENT",
-    academyName: "Apex Tutoring Academy",
-    title: "Parent of Alex Rivera",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-  },
-};
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  loginAsDemo: (role: UserRole) => void;
-  login: (email: string, role: UserRole) => void;
-  logout: () => void;
+export interface AuthUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
+  phone?: string;
+  avatar_url?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthContextType {
+  user: AuthUser | null;
+  session: Session | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
+  loginAsDemo: (role: "ADMIN" | "TEACHER" | "STUDENT") => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(DEMO_USERS.ADMIN);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (data && !error) {
+        setUser({
+          id: data.id,
+          email: data.email,
+          full_name: data.full_name,
+          role: data.role,
+          phone: data.phone,
+          avatar_url: data.avatar_url,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+    }
+  };
 
   useEffect(() => {
-    // Check if saved user exists in localStorage
-    const saved = localStorage.getItem("tutor_os_current_user");
-    if (saved) {
+    // Get initial session
+    const initAuth = async () => {
       try {
-        setUser(JSON.parse(saved));
-      } catch (e) {
-        setUser(DEMO_USERS.ADMIN);
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        }
+      } catch (err) {
+        console.error("Auth init error:", err);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    try {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setSession(session);
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    } catch (err) {
+      console.error("Auth subscription error:", err);
+      return;
     }
   }, []);
 
-  const loginAsDemo = (role: UserRole) => {
-    const selected = DEMO_USERS[role];
-    setUser(selected);
-    localStorage.setItem("tutor_os_current_user", JSON.stringify(selected));
+  const login = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        return { error: error.message };
+      }
+      return {};
+    } catch (err: any) {
+      return { error: err.message || "Login failed" };
+    }
   };
 
-  const login = (email: string, role: UserRole) => {
-    const demo = DEMO_USERS[role];
-    const newUser: User = {
-      ...demo,
-      email,
-      name: email.split("@")[0].replace(".", " "),
+  const loginAsDemo = async (role: "ADMIN" | "TEACHER" | "STUDENT") => {
+    // Demo mode - creates a mock user without actual Supabase auth
+    const demoUsers: Record<string, AuthUser> = {
+      ADMIN: {
+        id: "demo-admin-1",
+        email: "amir@apexacademy.edu",
+        full_name: "Amir Gunje",
+        role: "ADMIN",
+        phone: "+91 98765 43210",
+        avatar_url: undefined,
+      },
+      TEACHER: {
+        id: "demo-teacher-1",
+        email: "sarah.jenkins@apexacademy.edu",
+        full_name: "Dr. Sarah Jenkins",
+        role: "TEACHER",
+        phone: "+91 98123 45678",
+        avatar_url: undefined,
+      },
+      STUDENT: {
+        id: "demo-student-1",
+        email: "alex.rivera@student.apex.edu",
+        full_name: "Alex Rivera",
+        role: "STUDENT",
+        phone: "+1 (555) 234-5678",
+        avatar_url: undefined,
+      },
     };
-    setUser(newUser);
-    localStorage.setItem("tutor_os_current_user", JSON.stringify(newUser));
+
+    const demoUser = demoUsers[role];
+    if (demoUser) {
+      setUser(demoUser);
+      return {};
+    }
+    return { error: "Invalid role" };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
     setUser(null);
-    localStorage.removeItem("tutor_os_current_user");
+    setSession(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        loginAsDemo,
+        session,
+        loading,
         login,
+        loginAsDemo,
         logout,
+        isAuthenticated: !!user,
       }}
     >
       {children}
@@ -106,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

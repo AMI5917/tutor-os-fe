@@ -40,20 +40,20 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Teachers & Staff",
-    href: "/teachers",
+    href: "/dashboard/teachers",
     icon: Users,
     roles: ["ADMIN"],
   },
   {
     label: "Class Batches",
-    href: "/batches",
+    href: "/dashboard/batches",
     icon: Layers,
     badge: "8 Active",
     badgeVariant: "info",
   },
   {
     label: "Students CRM",
-    href: "/students",
+    href: "/dashboard/students",
     icon: UserCheck,
   },
   {
@@ -62,6 +62,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: Award,
     badge: "Sem 1",
     badgeVariant: "success",
+    roles: ["ADMIN", "TEACHER"],
   },
   {
     label: "Schedule / Calendar",
@@ -69,15 +70,17 @@ const NAV_ITEMS: NavItem[] = [
     icon: Calendar,
     badge: "4 Today",
     badgeVariant: "warning",
+    roles: ["ADMIN", "TEACHER"],
   },
   {
     label: "Attendance & Logs",
     href: "/dashboard/attendance",
     icon: ClipboardCheck,
+    roles: ["ADMIN", "TEACHER"],
   },
   {
     label: "Billing & Invoices",
-    href: "/bills",
+    href: "/dashboard/bills",
     icon: Receipt,
     badge: "6 Due",
     badgeVariant: "destructive",
@@ -100,6 +103,13 @@ interface AppSidebarProps {
 export function AppSidebar({ isOpen, onClose, collapsed }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  // Filter nav items by user role
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!item.roles) return true; // No role restriction = visible to all
+    if (!user) return false;
+    return item.roles.includes(user.role);
+  });
 
   // Close sidebar on navigation on mobile (only on pathname change, not on every render)
   useEffect(() => {
@@ -146,7 +156,7 @@ export function AppSidebar({ isOpen, onClose, collapsed }: AppSidebarProps) {
 
       {/* Navigation Links */}
       <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 
