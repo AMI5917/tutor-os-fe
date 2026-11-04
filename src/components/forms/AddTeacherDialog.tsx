@@ -27,6 +27,7 @@ export function AddTeacherDialog({ onAdd, initialTeacher, onUpdate }: AddTeacher
   const [middleName, setMiddleName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
   const [subjectSpecialization, setSubjectSpecialization] = React.useState("");
+  const [batchName, setBatchName] = React.useState("");
   const [rateType, setRateType] = React.useState<RateType>("Hourly");
   const [rateAmount, setRateAmount] = React.useState(0);
   const [mobileNumber, setMobileNumber] = React.useState("");
@@ -39,6 +40,7 @@ export function AddTeacherDialog({ onAdd, initialTeacher, onUpdate }: AddTeacher
       setMiddleName(initialTeacher.middleName ?? "");
       setLastName(initialTeacher.lastName);
       setSubjectSpecialization(initialTeacher.subjectSpecialization);
+      setBatchName(initialTeacher.batchName ?? "");
       setRateType(initialTeacher.rateType);
       setRateAmount(initialTeacher.rateAmount);
       setMobileNumber(initialTeacher.mobileNumber ?? "");
@@ -52,6 +54,7 @@ export function AddTeacherDialog({ onAdd, initialTeacher, onUpdate }: AddTeacher
     setMiddleName("");
     setLastName("");
     setSubjectSpecialization("");
+    setBatchName("");
     setRateType("Hourly");
     setRateAmount(0);
     setMobileNumber("");
@@ -67,6 +70,7 @@ export function AddTeacherDialog({ onAdd, initialTeacher, onUpdate }: AddTeacher
       middleName: middleName || undefined,
       lastName,
       subjectSpecialization,
+      batchName: batchName || undefined,
       rateType,
       rateAmount,
       mobileNumber,
@@ -115,6 +119,11 @@ export function AddTeacherDialog({ onAdd, initialTeacher, onUpdate }: AddTeacher
             value={subjectSpecialization}
             onChange={(e) => setSubjectSpecialization(e.target.value)}
             required
+          />
+          <Input
+            placeholder="Batch Name"
+            value={batchName}
+            onChange={(e) => setBatchName(e.target.value)}
           />
           <div className="grid grid-cols-2 gap-4">
             <Select value={rateType} onValueChange={(v) => setRateType(v as RateType)}>

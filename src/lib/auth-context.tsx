@@ -9,9 +9,11 @@ export interface AuthUser {
   id: string;
   email: string;
   full_name: string;
+  name?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
   phone?: string;
   avatar_url?: string;
+  academyName?: string;
 }
 
 interface AuthContextType {
@@ -19,7 +21,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  loginAsDemo: (role: "ADMIN" | "TEACHER" | "STUDENT") => Promise<{ error?: string }>;
+  loginAsDemo: (role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT") => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -58,7 +60,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        if (typeof window !== "undefined") {
+          const cachedDemo = localStorage.getItem("tutoros_demo_user");
+          if (cachedDemo) {
+            try {
+              const parsed = JSON.parse(cachedDemo);
+              if (parsed?.role) {
+                setUser(parsed);
+                setLoading(false);
+                return;
+              }
+            } catch (e) {
+              localStorage.removeItem("tutoros_demo_user");
+            }
+          }
+        }
+
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Auth init timeout")), 8000)
+        );
+        const { data: { session } } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
         setSession(session);
         if (session?.user) {
           await fetchUserProfile(session.user.id);
@@ -94,20 +116,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) {
         return { error: error.message };
       }
+      // Set session and user state immediately
+      if (data.session) {
+        setSession(data.session);
+      }
+      if (data.user) {
+        await fetchUserProfile(data.user.id);
+      }
       return {};
     } catch (err: any) {
-      return { error: err.message || "Login failed" };
+      console.error("Login error:", err);
+      return { error: err.message || "Login failed. Please check your connection." };
     }
   };
 
-  const loginAsDemo = async (role: "ADMIN" | "TEACHER" | "STUDENT") => {
+  const loginAsDemo = async (role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT") => {
     // Demo mode - creates a mock user without actual Supabase auth
     const demoUsers: Record<string, AuthUser> = {
       ADMIN: {
@@ -134,10 +164,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         phone: "+1 (555) 234-5678",
         avatar_url: undefined,
       },
+      PARENT: {
+        id: "demo-parent-1",
+        email: "david.rivera@guardian.apex.edu",
+        full_name: "David Rivera",
+        role: "PARENT",
+        phone: "+91 98234 56780",
+        avatar_url: undefined,
+      },
     };
 
     const demoUser = demoUsers[role];
     if (demoUser) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("tutoros_demo_user", JSON.stringify(demoUser));
+      }
       setUser(demoUser);
       return {};
     }
@@ -146,6 +187,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("tutoros_demo_user");
+      }
       await supabase.auth.signOut();
     } catch (err) {
       console.error("Logout error:", err);
@@ -171,9 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

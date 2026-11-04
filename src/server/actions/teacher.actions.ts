@@ -5,25 +5,26 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-function createClient() {
+async function createClient() {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookies().get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           try {
-            cookies().set(name, value, options);
+            cookieStore.set(name, value, options);
           } catch (error) {
             // Ignore
           }
         },
         remove(name: string, options: any) {
           try {
-            cookies().set(name, "", options);
+            cookieStore.set(name, "", options);
           } catch (error) {
             // Ignore
           }
@@ -34,7 +35,7 @@ function createClient() {
 }
 
 export async function getTeachers() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("teachers")
     .select(`
@@ -53,7 +54,7 @@ export async function getTeachers() {
 }
 
 export async function getTeacher(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("teachers")
     .select(`
@@ -84,7 +85,7 @@ export async function createTeacher(teacherData: {
   mobile_number: string;
   user_id: string;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("teachers")
     .insert(teacherData)
@@ -100,7 +101,7 @@ export async function createTeacher(teacherData: {
 }
 
 export async function updateTeacher(id: string, teacherData: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("teachers")
     .update(teacherData)
@@ -117,7 +118,7 @@ export async function updateTeacher(id: string, teacherData: any) {
 }
 
 export async function deleteTeacher(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("teachers")
     .update({ status: "INACTIVE" })

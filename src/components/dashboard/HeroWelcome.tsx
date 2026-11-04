@@ -39,7 +39,7 @@ export function HeroWelcome() {
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-white">
-            Welcome back, {user?.name}! 👋
+            Welcome back, {user?.name || user?.full_name || "User"}! 👋
           </h1>
 
           <p className="text-sm text-slate-300">

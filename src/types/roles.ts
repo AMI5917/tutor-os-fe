@@ -62,6 +62,8 @@ export interface BatchItem {
   scheduleDays: string;
   time: string;
   monthlyFee: number;
+  paidAmount?: number;
+  pendingAmount?: number;
 }
 
 // New types for Teacher management
@@ -77,6 +79,8 @@ export interface Teacher {
   rateAmount: number; // stored in Rupees (or local currency)
   mobileNumber: string;
   status: "ACTIVE" | "INACTIVE";
+  batchName?: string;
+  qualification?: string;
 }
 // -------------------------------------------------
 // Student management types (newly added)
@@ -94,7 +98,9 @@ export interface Student {
   subjects: string[]; // empty when enrollmentType === "ALL"
   fee: number; // Reupess
   status: "ACTIVE" | "INACTIVE";
-  paymentStatus: "PAID" | "PENDING"; // added for billing page
+  paymentStatus: "PAID" | "PENDING" | "PARTIALLY_PAID" | "OVERDUE"; // added for billing page
+  batchId?: string;
+  batchCode?: string;
 }
 
 // End of file

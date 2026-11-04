@@ -5,25 +5,26 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-function createClient() {
+async function createClient() {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookies().get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           try {
-            cookies().set(name, value, options);
+            cookieStore.set(name, value, options);
           } catch (error) {
             // Ignore
           }
         },
         remove(name: string, options: any) {
           try {
-            cookies().set(name, "", options);
+            cookieStore.set(name, "", options);
           } catch (error) {
             // Ignore
           }
@@ -34,7 +35,7 @@ function createClient() {
 }
 
 export async function getBatches() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("batches")
     .select(`
@@ -54,7 +55,7 @@ export async function getBatches() {
 }
 
 export async function getBatch(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("batches")
     .select(`
@@ -86,7 +87,7 @@ export async function createBatch(batchData: {
   max_capacity: number;
   color_code?: string;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("batches")
     .insert(batchData)
@@ -102,7 +103,7 @@ export async function createBatch(batchData: {
 }
 
 export async function updateBatch(id: string, batchData: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("batches")
     .update(batchData)
@@ -119,7 +120,7 @@ export async function updateBatch(id: string, batchData: any) {
 }
 
 export async function deleteBatch(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("batches")
     .update({ status: "ARCHIVED" })
@@ -134,7 +135,7 @@ export async function deleteBatch(id: string) {
 }
 
 export async function enrollStudentInBatch(batchId: string, studentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("batch_enrollment")
     .insert({
@@ -154,7 +155,7 @@ export async function enrollStudentInBatch(batchId: string, studentId: string) {
 }
 
 export async function unenrollStudentFromBatch(batchId: string, studentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("batch_enrollment")
     .update({ status: "DROPPED" })

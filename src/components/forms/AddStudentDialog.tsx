@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { MOCK_BATCHES } from "@/lib/mock-data";
 
 export interface Student {
   id?: string;
@@ -22,6 +23,7 @@ export interface Student {
   subjects?: string; // comma‑separated list when enrollmentType is "specific" or "single"
   fee: number;
   status: "active" | "inactive";
+  batchName?: string;
 }
 
 interface AddStudentDialogProps {
@@ -53,6 +55,7 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
   const [enrollmentType, setEnrollmentType] = useState(initialStudent?.enrollmentType ?? "all");
   const [subjects, setSubjects] = useState(initialStudent?.subjects ?? "");
   const [fee, setFee] = useState(initialStudent?.fee?.toString() ?? "");
+  const [batchName, setBatchName] = useState(initialStudent?.batchName ?? "");
   const [status, setStatus] = useState<Student["status"]>(initialStudent?.status ?? "active");
 
   const resetForm = () => {
@@ -64,6 +67,7 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
     setEnrollmentType("all");
     setSubjects("");
     setFee("");
+    setBatchName("");
     setStatus("active");
   };
 
@@ -79,6 +83,7 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
       subjects: subjects || undefined,
       fee: Number(fee),
       status,
+      batchName: batchName || undefined,
     };
 
     if (isEdit && onUpdate) {
@@ -103,14 +108,14 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
           + New Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Student" : "Enroll New Student"}</DialogTitle>
           <DialogDescription>
             Fill in the student details and press {isEdit ? "Update" : "Enroll"}.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 py-2">
           {/* Name fields */}
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1.5">
@@ -166,8 +171,8 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
           </div>
 
           {/* Subject(s) – shown when not "all" */}
-          {enrollmentType !== "all" && (
-            <div className="space-y-1.5">
+           {enrollmentType !== "all" && (
+            <div className="space-y-1.5 col-span-2">
               <Label htmlFor="subjects">Subject(s) (comma separated)</Label>
               <Input id="subjects" placeholder="e.g. Math, Physics" value={subjects} onChange={e => setSubjects(e.target.value)} />
             </div>
@@ -177,6 +182,21 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
           <div className="space-y-1.5">
             <Label htmlFor="fee">Fees (₹) *</Label>
             <Input id="fee" type="number" min="0" placeholder="3000" value={fee} onChange={e => setFee(e.target.value)} required />
+          </div>
+
+          {/* Batch selection */}
+          <div className="space-y-1.5">
+            <Label htmlFor="batchName">Batch Name</Label>
+            <Select value={batchName} onValueChange={setBatchName}>
+              <SelectTrigger id="batchName">
+                <SelectValue placeholder="Select batch" />
+              </SelectTrigger>
+              <SelectContent>
+                {MOCK_BATCHES.map((b) => (
+                  <SelectItem key={b.id} value={b.name}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Status – admin only */}
@@ -195,7 +215,7 @@ export function AddStudentDialog({ onAdd, onUpdate, initialStudent }: AddStudent
             </div>
           )}
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-2 col-span-2">
             <Button type="button" variant="outline" size="sm" onClick={() => { resetForm(); }}>
               Cancel
             </Button>

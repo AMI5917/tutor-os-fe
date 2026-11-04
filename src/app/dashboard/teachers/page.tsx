@@ -88,6 +88,7 @@ export default function TeachersPage() {
               <tr>
                 <th className="px-4 py-3">Teacher Name</th>
                 <th className="px-4 py-3">Subject Specialization</th>
+                <th className="px-4 py-3">Batch Name</th>
                 <th className="px-4 py-3">Qualification</th>
                 <th className="px-4 py-3">Rate Model</th>
                 <th className="px-4 py-3">Mobile</th>
@@ -98,7 +99,7 @@ export default function TeachersPage() {
             <tbody className="divide-y text-xs">
               {filteredTeachers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     No teachers found matching your filters.
                   </td>
                 </tr>
@@ -109,6 +110,7 @@ export default function TeachersPage() {
                       {t.firstName} {t.middleName ? t.middleName + " " : ""}{t.lastName}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{t.subjectSpecialization}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{t.batchName || "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.qualification || "—"}</td>
                     <td className="px-4 py-3">
                       <Badge variant="secondary" className="text-[10px]">

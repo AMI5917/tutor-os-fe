@@ -1,3 +1,4 @@
+// src/app/dashboard/layout.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -5,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
-import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -13,19 +13,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
   const handleSidebarClose = useCallback(() => setSidebarOpen(false), []);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, loading, router]);
 
-  if (!isAuthenticated) {
+  if (loading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -54,13 +54,12 @@ export default function DashboardLayout({
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <DashboardHeader 
-          onMenuClick={() => setSidebarOpen(true)} 
+        <DashboardHeader
+          onMenuClick={() => setSidebarOpen(true)}
           collapsed={collapsed}
           onCollapseToggle={() => {
             setCollapsed((prev) => !prev);
-            // On mobile, also open the sidebar when clicking collapse/expand
-            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            if (typeof window !== "undefined" && window.innerWidth < 1024) {
               setSidebarOpen(true);
             }
           }}

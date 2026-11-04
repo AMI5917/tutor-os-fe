@@ -31,6 +31,7 @@ export function QuickActionToolbar() {
 
   // Form states for other modals
   const [batchName, setBatchName] = useState("");
+  const [batchDays, setBatchDays] = useState("ALL");
   const [teacherName, setTeacherName] = useState("");
   const [invoiceAmount, setInvoiceAmount] = useState("");
 
@@ -131,6 +132,22 @@ export function QuickActionToolbar() {
                 <Label htmlFor="maxCap">Max Capacity</Label>
                 <Input id="maxCap" type="number" defaultValue="15" />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="batchDays">Batch Days</Label>
+              <Select value={batchDays} onValueChange={setBatchDays}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select days" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Days (Mon–Sun)</SelectItem>
+                  <SelectItem value="WEEKDAYS">Weekdays (Mon–Fri)</SelectItem>
+                  <SelectItem value="WEEKEND">Weekend (Sat–Sun)</SelectItem>
+                  <SelectItem value="MWF">Mon, Wed, Fri</SelectItem>
+                  <SelectItem value="TTS">Tue, Thu, Sat</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">

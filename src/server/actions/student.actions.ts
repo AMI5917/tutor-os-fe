@@ -5,25 +5,26 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-function createClient() {
+async function createClient() {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookies().get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           try {
-            cookies().set(name, value, options);
+            cookieStore.set(name, value, options);
           } catch (error) {
             // Ignore
           }
         },
         remove(name: string, options: any) {
           try {
-            cookies().set(name, "", options);
+            cookieStore.set(name, "", options);
           } catch (error) {
             // Ignore
           }
@@ -34,7 +35,7 @@ function createClient() {
 }
 
 export async function getStudents() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("students")
     .select(`
@@ -59,7 +60,7 @@ export async function getStudents() {
 }
 
 export async function getStudent(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("students")
     .select(`
@@ -107,7 +108,7 @@ export async function createStudent(studentData: {
   guardian_phone: string;
   guardian_email: string;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("students")
     .insert(studentData)
@@ -123,7 +124,7 @@ export async function createStudent(studentData: {
 }
 
 export async function updateStudent(id: string, studentData: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("students")
     .update(studentData)
@@ -145,7 +146,7 @@ export async function enrollStudentInSubject(
   enrollmentType: string,
   agreedMonthlyFee: number
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("student_subject_enrollment")
     .insert({
@@ -167,7 +168,7 @@ export async function enrollStudentInSubject(
 }
 
 export async function getSubjects() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("subjects")
     .select("*")
@@ -187,7 +188,7 @@ export async function createInvoice(invoiceData: {
   amount: number;
   due_date: string;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("invoices")
     .insert(invoiceData)
@@ -203,7 +204,7 @@ export async function createInvoice(invoiceData: {
 }
 
 export async function markInvoicePaid(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("invoices")
     .update({

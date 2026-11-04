@@ -45,12 +45,18 @@ export function LoginForm() {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      login(email, selectedRole);
-      toast.success(`Welcome back! Signed in as ${selectedRole}`);
-      setIsLoading(false);
-      router.push("/dashboard");
-    }, 600);
+    login(email, password).then((result) => {
+      if (result?.error) {
+        toast.error(result.error);
+        setIsLoading(false);
+      } else {
+        toast.success(`Welcome back! Signed in as ${selectedRole}`);
+        setTimeout(() => {
+          setIsLoading(false);
+          router.push("/dashboard");
+        }, 300);
+      }
+    });
   };
 
   const handleDemoLogin = (role: UserRole) => {
