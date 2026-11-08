@@ -24,11 +24,20 @@ The project specifications have been partitioned into dedicated, modular documen
 1. **Teacher Information Management:**
    - Store teacher profiles, qualifications, subject specializations, contact details, and compensation rates (hourly/monthly/batch split).
 2. **Class Batch & Student Batch Segregation:**
-   - Create distinct class cohorts (e.g. *Grade 10 Math Morning Batch*, *SAT Weekend Intensive*).
+   - Create distinct class cohorts (e.g. *Grade 10 Advanced Math*, *Grade 12 AP Physics*, *Grade 10 Full Science Stream*).
    - Prevent cross-batch scheduling clashes and student data mix-ups with isolated batch rosters.
-3. **Multi-Role RBAC:**
+   - Batch capacity tracking with visual progress bars, teacher assignment, and 1-click enrolled student inspection.
+3. **Global Academic Year Management System:**
+   - **Unified Session Switcher:** Centrally switch academic sessions (`2026-2027 (Active)`, `2025-2026`, and `2024-2025`) from the top application header.
+   - **Zero Friction Cross-Page Sync:** Switching the academic year globally instantly updates and filters the Executive Dashboard, Class Batches, Teachers & Staff Directory, Semester Results, Attendance, and Billing pages without manual page-by-page selection.
+   - **Rich Realistic Mock Data:** Pre-populated realistic records across all academic years with real student allocations, faculty lead assignments, and historical data.
+4. **Teachers & Staff Directory:**
+   - **Complete Faculty Roster:** Track full name, employee ID (`EMP-XXX`), designation, department, contact info, and active/inactive status.
+   - **Academic Year-Wise Faculty Management:** Filter faculty and staff by academic year, department, and role (Teacher / Staff).
+   - **Faculty Registration & Profiles:** Add new teachers and staff with subject allocations, joining dates, and detailed profile dialogs.
+5. **Multi-Role RBAC:**
    - Pre-configured roles for `ADMIN`, `TEACHER`, `STUDENT`, and `PARENT`.
-4. **Student Directory & Subject Enrollment Management System:**
+6. **Student Directory & Subject Enrollment Management System:**
    - **Batch-Wise Student Directory & Rosters:** Filter and manage students across active batch cohorts (*Grade 10 Advanced Math*, *AP Physics*, *Grade 10 Full Science Stream*, or *All Batches*) with basic bio, contact details, standard/grade, enrollment mode, and active status.
    - **Academic Year-Wise Directory & Historical Archives:** View and filter cohorts across current and prior academic sessions (`2026-2027`, `2025-2026`, and `2024-2025`), enabling administrators to track current students as well as archived alumni and historical records.
    - **New Student Registration Workflow:** Comprehensive enrollment dialog capturing student personal details, DOB, gender, parent/guardian contact, residential address, batch assignment, and subject selection with **automatic unique Student ID generation** (`TOS-2026-XXX`), avatar selection, and supporting document attachments (Birth Certificate, Marksheet, ID Proof).

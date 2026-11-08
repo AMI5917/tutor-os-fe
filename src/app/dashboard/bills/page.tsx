@@ -65,12 +65,23 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAcademicYear } from "@/lib/academic-year-context";
 
 export default function BillsPage() {
+  const { selectedYear, setSelectedYear } = useAcademicYear();
+
   // Navigation & Filter States
   const [selectedBatch, setSelectedBatch] = useState<string>("ALL");
   const [selectedMonth, setSelectedMonth] = useState<string>("2026-10");
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("2026-2027");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>(
+    selectedYear && selectedYear !== "ALL" ? selectedYear : "2026-2027"
+  );
+
+  useEffect(() => {
+    if (selectedYear && selectedYear !== "ALL") {
+      setSelectedAcademicYear(selectedYear);
+    }
+  }, [selectedYear]);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PAID" | "PARTIALLY_PAID" | "PENDING">("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("current-month");
@@ -292,20 +303,10 @@ export default function BillsPage() {
             </Select>
           </div>
 
-          {/* Academic Year Selector */}
-          <div className="w-32">
-            <Select value={selectedAcademicYear} onValueChange={setSelectedAcademicYear}>
-              <SelectTrigger className="h-9 text-xs font-medium">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {ACADEMIC_YEARS.map((y) => (
-                  <SelectItem key={y} value={y}>
-                    AY {y}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Academic Year Indicator - controlled globally from top header */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-sky-50/50 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900 text-xs text-sky-800 dark:text-sky-300">
+            <Calendar className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+            <span>AY: <strong className="font-semibold">{selectedYear === "ALL" ? "All Years" : selectedYear}</strong></span>
           </div>
 
           <Button

@@ -46,11 +46,22 @@ import {
 import { StudentAttendanceDetailDialog } from "@/components/attendance/StudentAttendanceDetailDialog";
 import { AttendanceReportDialog } from "@/components/attendance/AttendanceReportDialog";
 import { Student } from "@/types/roles";
+import { useAcademicYear } from "@/lib/academic-year-context";
 
 export default function AttendancePage() {
+  const { selectedYear, setSelectedYear } = useAcademicYear();
+
   // Batch, Year, Month, Date selections
   const [selectedBatchId, setSelectedBatchId] = useState<string>(MOCK_BATCHES[0]?.id || "bat_1");
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<AcademicYear>("2026-2027");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState<AcademicYear>(
+    selectedYear === "2025-2026" ? "2025-2026" : "2026-2027"
+  );
+
+  useEffect(() => {
+    if (selectedYear === "2025-2026" || selectedYear === "2026-2027") {
+      setSelectedAcademicYear(selectedYear);
+    }
+  }, [selectedYear]);
   const [selectedMonth, setSelectedMonth] = useState<string>("2026-10");
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // default to Oct 25, 2026 or today's date in YYYY-MM-DD
@@ -311,23 +322,10 @@ export default function AttendancePage() {
             </Select>
           </div>
 
-          {/* Academic Year Selector */}
-          <div className="w-36">
-            <Select
-              value={selectedAcademicYear}
-              onValueChange={(val) => setSelectedAcademicYear(val as AcademicYear)}
-            >
-              <SelectTrigger className="h-9 text-xs font-semibold">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {ACADEMIC_YEARS.map((yr) => (
-                  <SelectItem key={yr} value={yr}>
-                    AY {yr}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Academic Year indicator - controlled globally from top header */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-sky-50/50 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900 text-xs text-sky-800 dark:text-sky-300">
+            <Calendar className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+            <span>AY: <strong className="font-semibold">{selectedAcademicYear}</strong></span>
           </div>
 
           {/* Month Selector */}
@@ -881,23 +879,10 @@ export default function AttendancePage() {
               </CardDescription>
             </div>
 
-            {/* Academic Year Switcher */}
-            <div className="w-40">
-              <Select
-                value={selectedAcademicYear}
-                onValueChange={(v) => setSelectedAcademicYear(v as AcademicYear)}
-              >
-                <SelectTrigger className="h-8 text-xs font-semibold">
-                  <SelectValue placeholder="Academic Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACADEMIC_YEARS.map((yr) => (
-                    <SelectItem key={yr} value={yr}>
-                      AY {yr}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Academic Year Indicator - controlled globally from top header */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-sky-50/50 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900 text-xs text-sky-800 dark:text-sky-300">
+              <Calendar className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              <span>AY: <strong className="font-semibold">{selectedAcademicYear}</strong></span>
             </div>
           </CardHeader>
 

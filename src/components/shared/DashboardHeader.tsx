@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useAcademicYear } from "@/lib/academic-year-context";
 import { UserRole } from "@/types/roles";
 import {
   Search,
@@ -16,6 +17,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -38,11 +40,17 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ onMenuClick, collapsed, onCollapseToggle }: DashboardHeaderProps) {
   const { user, loginAsDemo, logout } = useAuth();
+  const { selectedYear, setSelectedYear, availableYears } = useAcademicYear();
   const [unreadCount, setUnreadCount] = useState(3);
 
   const handleRoleSwitch = (role: UserRole) => {
     loginAsDemo(role);
     toast.info(`Switched view to ${role} persona`);
+  };
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    toast.success(`Switched global academic year to ${year === "ALL" ? "All Years" : year}`);
   };
 
   return (
@@ -82,14 +90,67 @@ export function DashboardHeader({ onMenuClick, collapsed, onCollapseToggle }: Da
       </div>
 
       {/* Right Action Toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Academy Indicator */}
-        <div className="hidden md:flex items-center gap-2 rounded-lg border bg-card px-2.5 py-1 text-xs text-muted-foreground">
+        <div className="hidden xl:flex items-center gap-2 rounded-lg border bg-card px-2.5 py-1 text-xs text-muted-foreground">
           <Building2 className="h-3.5 w-3.5 text-primary" />
           <span className="font-semibold text-foreground">
             {user?.academyName || "Apex Academy"}
           </span>
         </div>
+
+        {/* Global Academic Year Switcher */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-200 shadow-xs"
+            >
+              <Calendar className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              <span className="text-xs font-semibold">
+                <span className="hidden sm:inline">Academic Year: </span>
+                {selectedYear === "ALL" ? "All Years" : selectedYear}
+              </span>
+              <Badge variant="outline" className="hidden lg:inline-flex text-[9px] px-1 py-0 h-4 bg-sky-200/60 text-sky-800 dark:bg-sky-900 dark:text-sky-300 border-none">
+                {selectedYear === "2026-2027" ? "Active" : "Session"}
+              </Badge>
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Global Academic Year
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {availableYears.map((yr) => (
+              <DropdownMenuItem
+                key={yr}
+                onClick={() => handleYearChange(yr)}
+                className="flex items-center justify-between cursor-pointer text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-3.5 w-3.5 text-sky-600" />
+                  <span>
+                    {yr} {yr === "2026-2027" ? "(Current)" : ""}
+                  </span>
+                </div>
+                {selectedYear === yr && <Check className="h-4 w-4 text-emerald-600" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleYearChange("ALL")}
+              className="flex items-center justify-between cursor-pointer text-xs"
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                <span>All Academic Years</span>
+              </div>
+              {selectedYear === "ALL" && <Check className="h-4 w-4 text-emerald-600" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Role Switcher Pill */}
         <DropdownMenu>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
+import { AcademicYearProvider } from "@/lib/academic-year-context";
 
 export default function DashboardLayout({
   children,
@@ -39,35 +40,37 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={handleSidebarClose}
-          aria-hidden="true"
-        />
-      )}
+    <AcademicYearProvider>
+      <div className="flex min-h-screen bg-background text-foreground">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={handleSidebarClose}
+            aria-hidden="true"
+          />
+        )}
 
-      {/* Sidebar */}
-      <AppSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} collapsed={collapsed} />
+        {/* Sidebar */}
+        <AppSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} collapsed={collapsed} />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <DashboardHeader
-          onMenuClick={() => setSidebarOpen(true)}
-          collapsed={collapsed}
-          onCollapseToggle={() => {
-            setCollapsed((prev) => !prev);
-            if (typeof window !== "undefined" && window.innerWidth < 1024) {
-              setSidebarOpen(true);
-            }
-          }}
-        />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl space-y-8">{children}</div>
-        </main>
+        {/* Main Content Area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <DashboardHeader
+            onMenuClick={() => setSidebarOpen(true)}
+            collapsed={collapsed}
+            onCollapseToggle={() => {
+              setCollapsed((prev) => !prev);
+              if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                setSidebarOpen(true);
+              }
+            }}
+          />
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto max-w-7xl space-y-8">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </AcademicYearProvider>
   );
 }
